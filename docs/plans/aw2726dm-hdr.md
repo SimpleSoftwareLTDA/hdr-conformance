@@ -332,7 +332,9 @@ render = { cm_auto_hdr = 0 }
 - `render.cm_auto_hdr = 2`.
 - Hyprland fixes committed on branch `hdr-fixes` at `73861b5`.
 - Patched binary built and installed at `~/.local/lib/hyprdeps/bin/Hyprland`.
-- Config validated with `Hyprland --verify-config`.
+- Config parsed with `Hyprland --verify-config`. The process exits with a pre-existing destructor
+  crash in this local branch. The old binary crashes in the same place, so the HDR patch did not
+  introduce it.
 - Modified shader compiled with `glslangValidator`.
 - Metadata verified in the running session: `eotf=2`, native primaries, `max_mastering=409`,
   `max_fall=204`.
