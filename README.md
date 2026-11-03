@@ -126,7 +126,24 @@ internal/adapters/       hyprland, kwin, windows, apple
 fixtures/edid/           synthetic EDID profiles
 fixtures/content/        test patterns and metadata
 docs/                    scenario spec and report schema
+.agents/skills/          agent skill for HDR conformance work
+.agents/agents/          reviewer, runner, test author, and standard editor subagents
 ```
+
+## Agent resources
+
+The repository ships one skill and four subagents so coding agents apply the same rules as human
+contributors.
+
+| Resource | File | Use |
+|---|---|---|
+| Skill | `.agents/skills/hdr-conformance/SKILL.md` | Normative rules, test matrix, golden values, pitfalls, and report schema |
+| `hdr-spec-reviewer` | `.agents/agents/hdr-spec-reviewer.md` | Review HDR changes against the rule set |
+| `hdr-benchmark-runner` | `.agents/agents/hdr-benchmark-runner.md` | Run live probes and produce a report |
+| `hdr-test-author` | `.agents/agents/hdr-test-author.md` | Add tests, fixtures, and golden vectors |
+| `hdr-standard-editor` | `.agents/agents/hdr-standard-editor.md` | Maintain rules, profiles, and versioning |
+
+`AGENTS.md` at the repository root is the entry point.
 
 ## Contributing
 
