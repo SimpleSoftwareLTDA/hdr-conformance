@@ -179,6 +179,7 @@ ceiling as the content peak. That is a `PIPE-02` failure.
 | SDR screenshot taken through the HDR pipeline | Screenshot is dim or clipped | CAPTURE-02 |
 | HDR metadata duplicated from maxFALL into maxCLL | Wrong content peak and average | META-02 |
 | Autologin or session selector hides the desktop | User cannot choose the HDR-capable session | not HDR, operational |
+| Auto HDR only reacts to Wayland color management clients | mpv or a game stays SDR while the output is SDR | operational |
 
 ## Report schema
 
