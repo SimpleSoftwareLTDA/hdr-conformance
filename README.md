@@ -145,6 +145,11 @@ contributors.
 
 `AGENTS.md` at the repository root is the entry point.
 
+## Plans
+
+- [AW2726DM HDR plan](docs/plans/aw2726dm-hdr.md): configuration, Hyprland fixes, build, and verification for the Dell Alienware AW2726DM on DP-2.
+- [AW2726DM EDID fixture](fixtures/edid/dell-aw2726dm.json): decoded capabilities used by the plan.
+
 ## Contributing
 
 Issues and pull requests are welcome. Start with a scenario or a fixture. Keep platform-specific behavior in adapters.

@@ -1,0 +1,32 @@
+{
+  "vendor": "Dell Inc.",
+  "model": "AW2726DM",
+  "serial": "HP02SJ4",
+  "connector": "DP-2",
+  "interface": "DisplayPort",
+  "resolution": "2560x1440",
+  "refresh_hz": 240,
+  "bit_depth": 10,
+  "color_formats": ["RGB 4:4:4", "YCrCb 4:4:4", "YCrCb 4:2:2"],
+  "hdr": {
+    "pq": true,
+    "hlg": false,
+    "bt2020_rgb": true,
+    "bt2020_ycc": true,
+    "max_luminance": 408.759,
+    "max_frame_average_luminance": 204.379,
+    "min_luminance": 0.0,
+    "eotf": [
+      "traditional gamma SDR",
+      "traditional gamma HDR",
+      "SMPTE ST2084"
+    ]
+  },
+  "primaries": {
+    "red": {"x": 0.6855, "y": 0.3037},
+    "green": {"x": 0.2402, "y": 0.7119},
+    "blue": {"x": 0.1435, "y": 0.0576},
+    "white": {"x": 0.3134, "y": 0.3291}
+  },
+  "notes": "QD-OLED panel. HDR peak is about 409 nits and max frame average is about 204 nits. HLG is not advertised. Use this fixture for HDR10/PQ pipeline tests, not for HLG tests."
+}
