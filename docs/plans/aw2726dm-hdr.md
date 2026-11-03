@@ -81,7 +81,7 @@ hl.monitor({
   scale = 1,
   bitdepth = 10,
   vrr = 3,
-  cm = "srgb",
+  cm = "hdr",
   max_luminance = 409,
   max_avg_luminance = 204,
   min_luminance = 0.0005,
@@ -103,9 +103,12 @@ hl.config({
 })
 ```
 
-`cm_auto_hdr = 2` switches a fullscreen HDR surface to `hdredid`. If `hdredid` produces artifacts,
-test `cm_auto_hdr = 1`. Do not set `cm = "hdr"` on the desktop for the first test. Keep the desktop
-in SDR and let fullscreen HDR content trigger the switch.
+`cm_auto_hdr = 2` switches a fullscreen HDR surface to `hdredid` when the client sets a Wayland
+color management image description. Clients that use Vulkan WSI, including mpv 0.41, did not
+trigger the switch on Hyprland 0.57.0. For those clients, set `cm = "hdr"` on the output. The
+desktop stays in HDR mode, and SDR content is mapped with the configured reference white.
+
+If `hdredid` produces artifacts for Wayland color management clients, test `cm_auto_hdr = 1`.
 
 On the monitor OSD, confirm HDR is enabled and the picture mode is not a demo or SDR mode.
 
@@ -115,21 +118,27 @@ Reload Hyprland or log out and back in. Verify:
 hyprctl monitors -j | python3 -c 'import json,sys; d=json.load(sys.stdin); [print(m["name"], m["colorManagementPreset"], m["currentFormat"], m["sdrMaxLuminance"]) for m in d]'
 ```
 
-Expected before HDR content: `DP-2 srgb XRGB2101010 204`.
-Expected during fullscreen HDR content: `DP-2 hdredid XRGB2101010 204` or `hdr`.
+Expected with `cm = "hdr"`: `DP-2 hdr XRGB2101010 204`.
+Expected with `cm = "srgb"` and a Wayland color management client: `DP-2 hdredid XRGB2101010 204`
+during fullscreen HDR content.
 
 Test with an HDR10 sample:
 
 ```bash
-mpv --fullscreen --target-colorspace-hint-mode=source "HDR10-sample.mkv"
+mpv --fullscreen --target-colorspace-hint=yes --target-colorspace-hint-mode=source "HDR10-sample.mkv"
 ```
+
+Observed on 2026-11-03 with `cm = "hdr"`: `colorManagementPreset` became `hdr`, and the
+`HDR_OUTPUT_METADATA` blob reported `eotf=2`, native primaries, `max_mastering=409`, and
+`max_fall=204`. `cm_auto_hdr` did not trigger for mpv 0.41.
 
 Without the code fixes, expect the monitor to enter HDR and the image to look dim or washed out.
 That is the `PIPE-02` defect.
 
 ## Phase 2: Code fixes
 
-Source: `~/src/hyprland-src`, branch `perf-clean`, tag v0.57.0. The HDR files match v0.57.0.
+Source: `~/src/hyprland-src`, base branch `lto-test`, fix branch `hdr-fixes`, tag v0.57.0. The HDR
+files match v0.57.0.
 
 ### P0.1 Use the content peak for tone mapping
 
@@ -315,3 +324,17 @@ render = { cm_auto_hdr = 0 }
 - Direct scanout can bypass the compositor tone mapper. Test with `direct_scanout = 0` to compare
   the composited path.
 - The panel peak is about 409 nits. Do not judge HDR by 1000-nit highlight expectations.
+
+## Local status, 2026-11-03
+
+- Config applied: `cm = "hdr"`, `max_luminance = 409`, `max_avg_luminance = 204`,
+  `min_luminance = 0.0005`, `sdr_max_luminance = 204`, `sdr_min_luminance = 0.0005`.
+- `render.cm_auto_hdr = 2`.
+- Hyprland fixes committed on branch `hdr-fixes` at `73861b5`.
+- Patched binary built and installed at `~/.local/lib/hyprdeps/bin/Hyprland`.
+- Config validated with `Hyprland --verify-config`.
+- Modified shader compiled with `glslangValidator`.
+- Metadata verified in the running session: `eotf=2`, native primaries, `max_mastering=409`,
+  `max_fall=204`.
+- Runtime verification of the patched tone mapping is pending a logout and login, because Hyprland
+  cannot hot-swap the running binary.
