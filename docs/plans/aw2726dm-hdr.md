@@ -81,7 +81,7 @@ hl.monitor({
   scale = 1,
   bitdepth = 10,
   vrr = 3,
-  cm = "hdr",
+  cm = "srgb", -- DP2_HDR
   max_luminance = 409,
   max_avg_luminance = 204,
   min_luminance = 0.0005,
@@ -105,8 +105,18 @@ hl.config({
 
 `cm_auto_hdr = 2` switches a fullscreen HDR surface to `hdredid` when the client sets a Wayland
 color management image description. Clients that use Vulkan WSI, including mpv 0.41, did not
-trigger the switch on Hyprland 0.57.0. For those clients, set `cm = "hdr"` on the output. The
-desktop stays in HDR mode, and SDR content is mapped with the configured reference white.
+trigger the switch on Hyprland 0.57.0. Gamescope also reported `bExposeHDRSupport: false` while
+the output was in SDR.
+
+Keep the desktop in `srgb` for pure black on normal web pages. Use `hdr-toggle` when you want HDR
+for a game or video. The script is in `tools/hdr-toggle`. It switches `DP-2` between `srgb` and
+`hdr` and reloads Hyprland.
+
+```bash
+hdr-toggle
+```
+
+The local keybind is `SUPER + SHIFT + H`.
 
 If `hdredid` produces artifacts for Wayland color management clients, test `cm_auto_hdr = 1`.
 
@@ -118,7 +128,8 @@ Reload Hyprland or log out and back in. Verify:
 hyprctl monitors -j | python3 -c 'import json,sys; d=json.load(sys.stdin); [print(m["name"], m["colorManagementPreset"], m["currentFormat"], m["sdrMaxLuminance"]) for m in d]'
 ```
 
-Expected with `cm = "hdr"`: `DP-2 hdr XRGB2101010 204`.
+Expected default: `DP-2 srgb XRGB2101010 204`.
+Expected after `hdr-toggle`: `DP-2 hdr XRGB2101010 204`.
 Expected with `cm = "srgb"` and a Wayland color management client: `DP-2 hdredid XRGB2101010 204`
 during fullscreen HDR content.
 
@@ -130,7 +141,11 @@ mpv --fullscreen --target-colorspace-hint=yes --target-colorspace-hint-mode=sour
 
 Observed on 2026-11-03 with `cm = "hdr"`: `colorManagementPreset` became `hdr`, and the
 `HDR_OUTPUT_METADATA` blob reported `eotf=2`, native primaries, `max_mastering=409`, and
-`max_fall=204`. `cm_auto_hdr` did not trigger for mpv 0.41.
+`max_fall=204`. `cm_auto_hdr` did not trigger for mpv 0.41 or gamescope.
+
+Desktop HDR lifted the black level on normal web pages. The default is now `cm = "srgb"` for pure
+black, with `hdr-toggle` for HDR content. If HDR mode still lifts black after the toggle, set the
+monitor OSD Dark Stabilizer or Black eQualizer to 0 and disable HDR demo modes.
 
 Without the code fixes, expect the monitor to enter HDR and the image to look dim or washed out.
 That is the `PIPE-02` defect.
@@ -327,16 +342,19 @@ render = { cm_auto_hdr = 0 }
 
 ## Local status, 2026-11-03
 
-- Config applied: `cm = "hdr"`, `max_luminance = 409`, `max_avg_luminance = 204`,
-  `min_luminance = 0.0005`, `sdr_max_luminance = 204`, `sdr_min_luminance = 0.0005`.
+- Config applied: `cm = "srgb"` by default, `max_luminance = 409`, `max_avg_luminance = 204`,
+  `min_luminance = 0.0000`, `sdr_max_luminance = 204`, `sdr_min_luminance = 0.0000`.
 - `render.cm_auto_hdr = 2`.
+- `hdr-toggle` switches `DP-2` between `srgb` and `hdr` and reloads Hyprland.
+- Keybind `SUPER + SHIFT + H` runs `hdr-toggle`.
 - Hyprland fixes committed on branch `hdr-fixes` at `73861b5`.
 - Patched binary built and installed at `~/.local/lib/hyprdeps/bin/Hyprland`.
 - Config parsed with `Hyprland --verify-config`. The process exits with a pre-existing destructor
   crash in this local branch. The old binary crashes in the same place, so the HDR patch did not
   introduce it.
 - Modified shader compiled with `glslangValidator`.
-- Metadata verified in the running session: `eotf=2`, native primaries, `max_mastering=409`,
+- SDR metadata verified: `eotf=0`, no HDR metadata, pure black.
+- HDR metadata verified after `hdr-toggle`: `eotf=2`, native primaries, `max_mastering=409`,
   `max_fall=204`.
 - Runtime verification of the patched tone mapping is pending a logout and login, because Hyprland
   cannot hot-swap the running binary.

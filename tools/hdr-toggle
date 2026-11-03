@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+cfg="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/monitors.lua"
+
+if grep -q 'cm = "hdr", -- DP2_HDR' "$cfg"; then
+  sed -i 's/cm = "hdr", -- DP2_HDR/cm = "srgb", -- DP2_HDR/' "$cfg"
+  echo "DP-2: SDR"
+else
+  sed -i 's/cm = "srgb", -- DP2_HDR/cm = "hdr", -- DP2_HDR/' "$cfg"
+  echo "DP-2: HDR"
+fi
+
+hyprctl reload >/dev/null
